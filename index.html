@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>诸暨大塘 · 永新小商品市场 3D 示意</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%, #000 100%);
+      color: #e5e7eb;
+    }
+    canvas { display: block; }
+
+    #three-container {
+      position: fixed;
+      inset: 0;
+    }
+
+    /* 左上：项目信息卡片 */
+    .info-panel {
+      position: fixed;
+      left: 18px;
+      top: 18px;
+      padding: 16px 18px 14px;
+      width: 280px;
+      background: rgba(15, 23, 42, 0.82);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .info-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: 0.4px;
+      color: #f9fafb;
+    }
+    .info-sub {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 4px 10px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .info-label { color: #9ca3af; }
+    .info-value { color: #e5e7eb; font-weight: 500; }
+
+    /* 右侧：楼层平面图面板 */
+    .floor-panel {
+      position: fixed;
+      right: 18px;
+      top: 18px;
+      width: 320px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 14px 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .floor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .floor-title {
+      font-size: 15px;
+      font-weight: 650;
+      color: #f9fafb;
+    }
+    .floor-sub {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .floor-tabs {
+      display: flex;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .floor-btn {
+      flex: 0 0 auto;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+    .floor-btn:hover {
+      transform: translateY(-0.5px);
+      border-color: #60a5fa;
+    }
+    .floor-btn.active {
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      border-color: transparent;
+      color: #f9fafb;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+    }
+
+    .floor-canvas-wrap {
+      margin-top: 4px;
+      background: radial-gradient(circle at 10% 0%, #111827 0, #020617 32%, #020617 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 8px;
+    }
+    #floor-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      background: #f9fafb;
+    }
+    .floor-meta {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    /* 右下角操作提示 */
+    .hint-pill {
+      position: fixed;
+      right: 18px;
+      bottom: 16px;
+      font-size: 11px;
+      color: #e5e7eb;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 999px;
+      padding: 5px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    @media (max-width: 960px) {
+      .info-panel {
+        width: 230px;
+      }
+      .floor-panel {
+        width: calc(100% - 36px);
+        bottom: 16px;
+        top: auto;
+      }
+      .hint-pill {
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        bottom: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="three-container"></div>
+
+  <div class="info-panel">
+    <div class="info-title">诸暨 · 永新小商品市场</div>
+    <div class="info-sub">大塘镇主街沿线 · 三层商业体 3D 示意（非精确建模，仅体量与比例示意）</div>
+    <div class="info-grid">
+      <div class="info-label">总层数</div><div class="info-value">3 层</div>
+      <div class="info-label">F1 建面</div><div class="info-value">约 11000 ㎡</div>
+      <div class="info-label">F2 建面</div><div class="info-value">约 11000 ㎡</div>
+      <div class="info-label">F3 建面</div><div class="info-value">约 5500 ㎡</div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;">
+      视角支持拖拽、缩放，可结合右侧楼层平面图查看整体格局。
+    </div>
+  </div>
+
+  <div class="floor-panel">
+    <div class="floor-header">
+      <div class="floor-title">楼层平面图（示意）</div>
+      <div class="floor-sub">点击切换 F1 / F2 / F3</div>
+    </div>
+    <div class="floor-tabs">
+      <button class="floor-btn" data-floor="1">F1 · 沿街商铺</button>
+      <button class="floor-btn" data-floor="2">F2 · 市场铺位</button>
+      <button class="floor-btn" data-floor="3">F3 · 半层仓储 / 配套</button>
+    </div>
+    <div class="floor-canvas-wrap">
+      <canvas id="floor-canvas" width="280" height="190"></canvas>
+    </div>
+    <div class="floor-meta" id="floor-meta">
+      当前：F1，建筑面积约 11000 ㎡。轮廓根据实景照片抽象而来，非精确测绘。
+    </div>
+  </div>
+
+  <div class="hint-pill">
+    左键拖拽旋转 · 滚轮缩放 · 右键 / Ctrl + 拖拽平移
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
